@@ -1,0 +1,93 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=4808
+
+This plugin is a fork of AutoPairs. ( vimscript #3599 )
+
+AutoPairs is surely great plugin, but, to me, it behaves too aggressively: if
+your cursor is on ")" char, and you type ")", cursor ALWAYS jumps over the ")"
+instead of inserting new char.
+
+(And, in "fly mode", AutoPairs is even much more "aggressive"... 
+So if you like "fly mode" of AutoPairs, then you definitely don't need for
+auto-pairs-gentle plugin)
+
+Personally I want the plugin to meddle with it as little as possible. Ideal behavior for
+me is that plugin should jump only over those chars, pairs for whose were
+inserted automatically: sometimes, and not so rarely, I really need to insert
+some brace before another brace, and aggressive jumping over all pair chars
+annoyed me so much that I had to completely get rid of AutoPairs until I found
+the way to improve it.
+
+First of all, I must say that I have written a patch for existing AutoPairs
+plugin that just adds new option, and default behavior was not changed at all.
+I have sent pull-request to the author
+( https://github.com/jiangmiao/auto-pairs/pull/71 ) , but he answered that my
+solution "is not current plugin way", and disagreed to merge.
+
+I believe that highly configurable tools are generally good, and so, it worth
+to add a new option to an existing tool instead of make a fork, but now, to
+make a fork is the only way I'm left with.
+
+
+So, here's an explanation of the behavior of new plugin AutoPairsGentle.
+
+Consider an example ("|" char indicates cursor position):
+
+I have an existing expression (that I typed some time ago, not just now):
+
+                  (a * b|)
+
+I type:
+
+                   * (
+
+Result:
+
+                  (a * b * (|))
+
+I type:
+
+                  c + d
+
+Result:
+
+                  (a * b * (c + d|))
+
+I type:
+
+                  )
+
+Result:
+
+                  (a * b * (c + d)|)
+
+Note that cursor just jumped over the ")" since it was inserted automatically.
+But if I type ")" again, new char ")" will be inserted, instead of jumping
+over the last ")"! Because last parens was not typed just now.
+But if you type several nested parens, of course cursor will jump over all of them.
+And not more.
+
+The same is for any other pair character.
+
+This is how actually modern IDEs editors work (I have checked Eclipse and
+NetBeans), and this algorithm is really useful.
+
+If you don't like this behavior, you surely don't need this plugin.
+
+How does it work: actually, applied solution is very simple: plugin remembers
+how many pairs were inserted, and jumps only over this count of pair chars. When
+user leaves insert mode, pairs count is reset.
+
+
+
+NOTE 1: default behavior of AutoPairsGentle is the same as original AutoPairs,
+so, to make the algorithm above work, you should define an option in your
+vimrc:
+
+let g:AutoPairsUseInsertedCount = 1
+
+NOTE 2: this option is not compatible with "fly mode" ( g:AutoPairsFlyMode ),
+but I believe that if you like fly mode, then you definitely do not need for
+AutoPairsGentle, because "fly mode" is much more "aggressive" than default
+behavior.
+
+
